@@ -4,17 +4,16 @@ import type { ViewName } from "../store";
 
 interface NavSpec {
   key: ViewName;
-  dot: string;
 }
 
 const NAV: NavSpec[] = [
-  { key: "dashboard", dot: "◉" },
-  { key: "command", dot: "⌘" },
-  { key: "history", dot: "≡" },
-  { key: "security", dot: "⛨" },
-  { key: "memory", dot: "❥" },
-  { key: "settings", dot: "⚙" },
-];
+  { key: "dashboard" },
+  { key: "command" },
+  { key: "history" },
+  { key: "security" },
+  { key: "memory" },
+  { key: "settings" },
+];;
 
 type Translate = (key:
   | "app_title" | "nav_dashboard" | "nav_command" | "nav_history"
@@ -42,8 +41,9 @@ export function Sidebar(props: {
           tabIndex={0}
           onKeyDown={(e) => e.key === "Enter" && props.onNavigate(item.key)}
         >
-          <span className="dot">{item.dot}</span>
-          <span>{t(`nav_${item.key}` as Parameters<Translate>[0])}</span>
+          <span className="dot" />
+          <span className="nav-label">{t(`nav_${item.key}` as Parameters<Translate>[0])}</span>
+          {item.key === "command" && <span className="kbd">⌘K</span>}
         </div>
       ))}
       <div className="sidebar-footer">

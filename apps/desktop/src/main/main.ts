@@ -9,6 +9,7 @@
  *  5. tray/window lifecycle
  */
 import { app, BrowserWindow, Menu, session, shell } from "electron";
+import * as fs from "fs";
 import * as path from "path";
 import { loadNative, resolveDbPath } from "./native";
 import { registerIpc, selfTestIpcContract, wireEngineEvents, type IpcContext } from "./ipc";
@@ -31,13 +32,20 @@ if (!gotLock) {
 }
 
 function applySecurityPolicy(): void {
+  /**
+   * CSP: strict in production. In dev the @vitejs/plugin-react preamble is an
+   * INLINE script injected into index.html and HMR needs ws:// — blocking them
+   * blanks the window ("can't detect preamble"). Dev stays sandboxed by
+   * contextIsolation, so a relaxed script/connect policy is safe locally.
+   */
+  const csp = isDev
+    ? "default-src 'self'; script-src 'self' 'unsafe-inline' http://127.0.0.1:5173; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' ws://127.0.0.1:5173 http://127.0.0.1:* http://localhost:5173; font-src 'self' data:; worker-src 'self' blob:"
+    : "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' http://127.0.0.1:*; font-src 'self' data:";
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
     callback({
       responseHeaders: {
         ...details.responseHeaders,
-        "Content-Security-Policy": [
-          "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' http://127.0.0.1:*; font-src 'self' data:",
-        ],
+        "Content-Security-Policy": [csp],
       },
     });
   });
@@ -48,12 +56,14 @@ function applySecurityPolicy(): void {
 
 function createWindow(): void {
   mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
+    width: 1240,
+    height: 820,
     minWidth: 960,
     minHeight: 640,
+    frame: false, // custom glass chrome in the renderer (topbar + win controls)
     autoHideMenuBar: true,
-    backgroundColor: "#0b0f17",
+    backgroundColor: "#04060c",
+    show: false,
     webPreferences: {
       preload: path.join(__dirname, "../preload/index.js"),
       contextIsolation: true,
@@ -64,6 +74,7 @@ function createWindow(): void {
       spellcheck: false,
     },
   });
+  mainWindow.once("ready-to-show", () => mainWindow?.show());
 
   Menu.setApplicationMenu(null);
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
@@ -85,6 +96,22 @@ function createWindow(): void {
     if (process.env.JARVIS_DEV_TOOLS === "1") {
       mainWindow.webContents.openDevTools({ mode: "detach" });
     }
+    // Dev diagnostics: forward renderer console + load failures to stdout.
+    mainWindow.webContents.on("console-message", (_e, level, message, line, sourceId) => {
+      console.log(`[renderer:${level}] ${message} (${sourceId}:${line})`);
+    });
+    mainWindow.webContents.on("did-fail-load", (_e, code, desc, url) => {
+      console.error(`[load-fail] code=${code} ${desc} ${url}`);
+    });
+    mainWindow.webContents.on("render-process-gone", (_e, details) => {
+      console.error(`[render-gone] ${details.reason}`);
+    });
+    mainWindow.webContents.on("did-finish-load", () => {
+      console.log("[load] finished");
+    });
+    mainWindow.webContents.on("preload-error", (_e, path, err) => {
+      console.error(`[preload-error] ${path}`, err);
+    });
   } else {
     void mainWindow.loadFile(path.join(__dirname, "../../dist/index.html"));
   }
@@ -92,6 +119,22 @@ function createWindow(): void {
   mainWindow.on("closed", () => {
     mainWindow = null;
   });
+
+  // Dev helper: auto-capture a preview screenshot (used to verify the UI).
+  if (isDev && process.env.JARVIS_SHOT === "1") {
+    setTimeout(() => {
+      const w = mainWindow;
+      if (!w || w.isDestroyed()) return;
+      void w.webContents
+        .capturePage()
+        .then((img) => {
+          const out = path.join(app.getAppPath(), "preview.png");
+          fs.writeFileSync(out, img.toPNG());
+          console.log(`[shot] saved ${out}`);
+        })
+        .catch((err) => console.error("[shot] failed", err));
+    }, 5000);
+  }
 }
 
 function eventPreventDefault(event: { preventDefault(): void }): void {

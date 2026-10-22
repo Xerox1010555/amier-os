@@ -37,6 +37,12 @@ const api = {
   setKey: (account: string, value: string) => invoke("vault.set", account, value),
   aiHealth: () => invoke("ai.health"),
   aiChat: (prompt: string) => invoke("ai.chat", prompt),
+  /** Frameless window chrome controls. */
+  win: {
+    min: () => invoke("window.minimize"),
+    max: () => invoke("window.maximize"),
+    close: () => invoke("window.close"),
+  },
   aiCritique: (prompt: string, plan: unknown) => {
     void plan; // critique flows through the ask() response flags
     return Promise.resolve({ ok: true });

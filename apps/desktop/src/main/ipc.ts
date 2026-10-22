@@ -156,6 +156,23 @@ export function registerIpc(ctx: IpcContext): void {
 
   handle("ai.health", async () => aiHealth());
 
+  // ── Window controls (frameless chrome) ────────────────────────────────────
+  handle("window.minimize", () => {
+    ctx.win()?.minimize();
+    return true;
+  });
+  handle("window.maximize", () => {
+    const w = ctx.win();
+    if (!w) return false;
+    if (w.isMaximized()) w.unmaximize();
+    else w.maximize();
+    return true;
+  });
+  handle("window.close", () => {
+    ctx.win()?.close();
+    return true;
+  });
+
   handle("ai.chat", async (_event, prompt: string) => {
     // Streaming native SSE marshalling is roadmap; here we accumulate the
     // full answer (still fast, still typed, no renderer net access).

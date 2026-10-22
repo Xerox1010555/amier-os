@@ -26,6 +26,7 @@ db/*.db
 db/*.db-*
 *.log
 logs/
+preview.png
 
 # OS / IDE
 .DS_Store

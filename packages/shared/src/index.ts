@@ -153,6 +153,9 @@ export const IPC_METHODS = [
   "vault.set",
   "ai.health",
   "ai.chat",
+  "window.minimize",
+  "window.maximize",
+  "window.close",
 ] as const;
 
 export type IpcMethod = (typeof IPC_METHODS)[number];

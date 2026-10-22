@@ -10,6 +10,8 @@ stricter-of merge with the model's advisory risk, a human confirmation gate,
 hash-chained audit log. Secrets never leave the OS keychain; command output never
 reaches an LLM.
 
+![Jarvis OS dashboard — Aurora Glass UI](docs/preview-dashboard.png)
+
 ---
 
 ## Monorepo layout
