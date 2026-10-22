@@ -1,0 +1,42 @@
+# Local dev stack: orchestrator + prometheus + grafana.
+# Usage: docker compose -f infrastructure/docker/docker-compose.dev.yml up
+name: jarvis-dev
+
+services:
+  orchestrator:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      JARVIS_LLM_PROVIDER: ${JARVIS_LLM_PROVIDER:-mock}
+      JARVIS_LLM_MODEL: ${JARVIS_LLM_MODEL:-}
+      JARVIS_SHARED_SECRET: ${JARVIS_SHARED_SECRET:-dev-compose-secret}
+      JARVIS_REQUIRE_AUTH: "true"
+      JARVIS_LOG_LEVEL: INFO
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health').status==200 else 1)"]
+      interval: 30s
+      timeout: 5s
+
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    volumes:
+      - ../monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana:11.1.0
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-jarvis-admin}
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+    volumes:
+      - ../monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ../monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus

@@ -1,0 +1,14 @@
+# Prometheus scrape config — local Jarvis stack.
+global:
+  scrape_interval: 15s
+  evaluation_interval: 30s
+
+scrape_configs:
+  - job_name: jarvis-orchestrator
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["orchestrator:8000"]
+
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]

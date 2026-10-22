@@ -1,0 +1,31 @@
+{
+  "name": "jarvis-os",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Jarvis OS — AI Operating System Assistant (Electron + Rust core + FastAPI orchestrator)",
+  "license": "MIT",
+  "workspaces": [
+    "apps/desktop",
+    "packages/shared"
+  ],
+  "scripts": {
+    "bootstrap": "npm install --workspaces --include-workspace-root",
+    "core:build": "cargo build --release --manifest-path core/Cargo.toml",
+    "core:test": "cargo test --manifest-path core/Cargo.toml",
+    "dev": "npm run dev --workspace apps/desktop",
+    "start": "npm run start --workspace apps/desktop",
+    "build": "npm run build --workspace packages/shared && npm run build --workspace apps/desktop",
+    "typecheck": "npm run typecheck --workspace packages/shared && npm run typecheck --workspace apps/desktop",
+    "test:python": "python -m pytest services/ai-orchestrator/tests -q",
+    "test:web": "npm run typecheck",
+    "test:all": "node scripts/test_all.mjs",
+    "lint:py": "python -m ruff check services/ai-orchestrator"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "allowScripts": {
+    "electron@31.7.7": true,
+    "esbuild@0.21.5": true
+  }
+}

@@ -1,0 +1,67 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  python-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install service deps
+        run: pip install -r services/ai-orchestrator/requirements.txt
+      - name: Run pytest
+        working-directory: .
+        env:
+          JARVIS_LLM_PROVIDER: mock
+          JARVIS_SHARED_SECRET: ci-secret
+        run: python -m pytest services/ai-orchestrator/tests -q
+
+  typescript-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install workspaces
+        run: npm install --workspaces --include-workspace-root
+      - name: Build shared
+        run: npm run build --workspace packages/shared
+      - name: Typecheck desktop
+        run: npm run typecheck --workspace apps/desktop
+      - name: Build desktop (vite + tsc)
+        run: npm run build --workspace apps/desktop
+
+  rust-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: core
+      - name: cargo test (core unit tests)
+        run: cargo test --manifest-path core/Cargo.toml --all-features
+      - name: cargo build (napi module)
+        run: cargo build --release --manifest-path core/Cargo.toml
+      - name: Rename artifact for electron
+        run: |
+          cp core/target/release/libai_os_core.so core/ai_os_core.node
+          ls -la core/
+
+  lint:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install ruff
+      - run: ruff check services/ai-orchestrator

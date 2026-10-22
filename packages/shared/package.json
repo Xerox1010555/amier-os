@@ -1,0 +1,19 @@
+{
+  "name": "@jarvis/shared",
+  "version": "1.0.0",
+  "description": "Shared schemas, IPC contract and utilities for Jarvis OS",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4",
+    "@types/node": "^22.5.0"
+  }
+}

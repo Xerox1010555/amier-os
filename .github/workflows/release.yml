@@ -1,0 +1,49 @@
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  build-desktop:
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install workspaces
+        run: npm install --workspaces --include-workspace-root
+      - name: Build shared
+        run: npm run build --workspace packages/shared
+      - name: Build Rust core
+        run: cargo build --release --manifest-path core/Cargo.toml
+      - name: Stage native artifact (windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          Copy-Item core/target/release/ai_os_core.dll core/ai_os_core.node -Force
+      - name: Stage native artifact (unix)
+        if: matrix.os != 'windows-latest'
+        run: |
+          cp core/target/release/libai_os_core.so core/ai_os_core.node
+      - name: Build desktop
+        run: npm run build --workspace apps/desktop
+      - name: Package (electron-builder)
+        working-directory: apps/desktop
+        run: npx electron-builder --publish never
+      - name: Upload artifacts to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            apps/desktop/release/**/*.exe
+            apps/desktop/release/**/*.dmg
+            apps/desktop/release/**/*.AppImage
+            apps/desktop/release/**/*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

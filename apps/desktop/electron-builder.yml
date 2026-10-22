@@ -1,0 +1,26 @@
+appId: local.jarvis.os
+productName: Jarvis OS
+directories:
+  output: release
+files:
+  - dist/**
+  - dist-electron/**
+extraResources:
+  - from: ../../core/ai_os_core.node
+    to: core/ai_os_core.node
+    filter:
+      - '**/*'
+win:
+  target: nsis
+  icon: assets/icon.png
+mac:
+  target: dmg
+  category: public.app-category.productivity
+linux:
+  target: AppImage
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+publish:
+  provider: generic
+  url: https://updates.jarvis.local/

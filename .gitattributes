@@ -1,0 +1,9 @@
+# Normalize line endings: LF in repo, CRLF only where Windows tools expect it.
+* text=auto
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.rs text diff=rust
+*.sql text
+*.json text
+*.md text
