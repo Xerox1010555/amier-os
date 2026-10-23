@@ -63,9 +63,15 @@ When a Rust engine was built (`npm run core:build`), `predist` bundles it — th
 installer then boots with the real rules engine instead of the offline stub.
 
 **Android** — `apps/mobile` is the companion APK (`com.amier.os`): plans +
-streamed chat + server/secret pairing, zero OS execution. Build via the
-`mobile.yml` workflow (artifact `Amier-OS-debug-apk`) or locally with JDK 17 +
-Android SDK — full pairing guide in [`docs/MOBILE.md`](docs/MOBILE.md).
+streamed chat + server/secret pairing, zero OS execution. One-click local build
+(the machine already carries JDK 17 + Android SDK):
+
+```pwsh
+powershell -ExecutionPolicy Bypass -File scripts/build-apk.ps1   # → apps/mobile/release/Amier OS 1.0.0.apk
+```
+
+or via CI (`mobile.yml`, artifact `Amier-OS-debug-apk`) or Android Studio —
+full pairing + build guide in [`docs/MOBILE.md`](docs/MOBILE.md).
 
 **Personal-assistant mode** — one-click Desktop shortcut, .env-driven provider
 auto-detect, login autostart, and Arabic/English "open YouTube" execution:

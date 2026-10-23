@@ -42,14 +42,27 @@ mobile) and stamped into Android mipmaps/splash via `@capacitor/assets`.
    (on tags `v*` the APK is also attached to the release).
 3. Side-load: allow "install unknown apps" → open the APK.
 
-**Locally (requires JDK 17 + Android SDK):**
+**Locally (one click — this machine already has JDK 17 + the Android SDK):**
 
 ```pwsh
-npm install --workspaces --include-workspace-root
+powershell -ExecutionPolicy Bypass -File scripts/build-apk.ps1
+# → apps/mobile/release/Amier OS 1.0.0.apk
+```
+
+The script runs the web build, `cap sync`, then Gradle. Windows-path pitfall it
+solves: `gradlew.bat` **and even `java -cp`** corrupt projects living under
+non-ASCII paths such as `E:\work\مشاريع البرمجه\...` (and AGP refuses non-ASCII
+project dirs outright), so the script mirrors the project through depth-matched
+NTFS junctions at a pure-ASCII root (`%USERNAME%\amier-android\...`) and builds
+from there while every file stays in the repo.
+
+Manual equivalent:
+
+```pwsh
 npm run build --workspace apps/mobile        # web bundle → dist/
 npx cap sync android                         # copy dist into the android project
-cd apps/mobile/android
-.\gradlew assembleDebug                      # APK at app/build/outputs/apk/debug/
+# then Gradle via the bridge (see scripts/build-apk.ps1) — plain
+# `gradlew.bat` breaks on non-ASCII cwd
 ```
 
 Or open `apps/mobile/android` in Android Studio and press Run.
