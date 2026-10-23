@@ -126,6 +126,43 @@ def test_chat_sse_stream(app_client, auth_headers):
     assert "meta" in events and "delta" in events and "done" in events
 
 
+def test_plan_local_assistant_bilingual(app_client, auth_headers):
+    """The offline local assistant must understand Arabic and English
+    everyday intents without any provider key (user's core complaint)."""
+    cases = [
+        # (prompt, expected command substring, expected risk)
+        ("افتح يوتيوب", "https://www.youtube.com", "low"),
+        ("Open YouTube", "https://www.youtube.com", "low"),
+        ("ابحث عن قطط", "google.com/search?q=", "low"),
+        ("search cute cats", "google.com/search?q=", "low"),
+        ("افتح المفكرة", "notepad", "low"),
+    ]
+    for prompt, command_sub, risk in cases:
+        resp = app_client.post("/api/v1/plan", json={"prompt": prompt}, headers=auth_headers)
+        assert resp.status_code == 200, f"{prompt}: {resp.text[:300]}"
+        step = resp.json()["steps"][0]
+        assert command_sub in step["command"], f"{prompt} -> {step['command']}"
+        assert step["llm_risk_level"] == risk
+
+
+def test_plan_local_folder_is_medium_with_confirmation(app_client, auth_headers):
+    resp = app_client.post("/api/v1/plan", json={"prompt": "اعمل مجلد Music"}, headers=auth_headers)
+    assert resp.status_code == 200, resp.text[:300]
+    step = resp.json()["steps"][0]
+    assert "mkdir" in step["command"] and "Music" in step["command"]
+    assert step["llm_risk_level"] == "medium"
+    assert step["llm_requires_confirmation"] is True
+
+
+def test_plan_arabic_destructive_is_never_proposed(app_client, auth_headers):
+    """Safety law: destructive intent →ishop refusal, never an execution plan."""
+    resp = app_client.post("/api/v1/plan", json={"prompt": "امسح كل الملفات لخلاص"}, headers=auth_headers)
+    assert resp.status_code == 200, resp.text[:300]
+    step = resp.json()["steps"][0]
+    assert step["llm_risk_level"] in {"high", "deny"}
+    assert "echo refused" in step["command"] or step["command"].startswith("echo")
+
+
 def test_problem_json_on_unknown_path(app_client):
     resp = app_client.get("/api/v9/nowhere")
     assert resp.status_code == 404

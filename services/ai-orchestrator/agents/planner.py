@@ -77,7 +77,16 @@ class PlanningAgent(Agent):
         if not isinstance(raw_steps, list):
             raise ProblemError(502, "E_PLAN_INVALID", detail="Plan JSON had no steps array.")
         if not raw_steps:
-            raise ProblemError(422, "E_PLAN_REFUSED", detail="The planner declined this request on policy grounds.")
+            raise ProblemError(
+                422,
+                "E_PLAN_REFUSED",
+                detail=(
+                    "تعذّر التخطيط الآمن لهذا الطلب محلياً — جرّب: «افتح يوتيوب» · "
+                    "«ابحث عن الطقس» · «افتح المفكرة». | The planner declined this request. "
+                    "Try: open YouTube, search the weather, open Notepad. "
+                    "ولفهم أي طلب آخر أضف مفتاح مزوّد في services/ai-orchestrator/.env."
+                ),
+            )
 
         steps: list[TaskStep] = []
         for raw in raw_steps[: settings.max_steps_per_plan]:

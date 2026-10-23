@@ -14,6 +14,7 @@ from typing import Any, AsyncIterator
 
 import httpx
 
+import local_assistant
 from config import Settings
 from metrics import PROVIDER_LATENCY
 from problems import ProblemError
@@ -65,11 +66,44 @@ class Provider(ABC):
 class MockProvider(Provider):
     name = "mock"
 
+    @staticmethod
+    def _strip_prompt(user: str) -> str:
+        """Extract the raw user prompt — the planner wraps it in triple quotes."""
+        marker = '"""'
+        if marker in user:
+            parts = user.split(marker)
+            if len(parts) >= 3:
+                return parts[1].strip()
+        return user
+
     async def complete_text(self, system: str, user: str) -> str:
+        prompt = self._strip_prompt(user)
+
+        # 1) local heuristic assistant — bilingual everyday skills, no API key
+        steps = local_assistant.interpret(prompt)
+        if not steps and local_assistant.is_destructive(prompt):
+            # 2) destructive intent (Arabic/English) — never propose execution;
+            #    surface a high-risk advisory step so the fast-path and engine
+            #    gates stay in control (the human denies it or it's denied).
+            steps = [
+                {
+                    "description": "تم رفض ذلك الطلب محلياً (خطر تدميري) | destructive request refused locally",
+                    "command": "cmd /c echo refused: destructive request requires explicit approval",
+                    "llm_risk_level": "high",
+                    "llm_requires_confirmation": True,
+                    "rationale": "Destructive intents are never executed. Advisory — the Rust engine re-classifies.",
+                }
+            ]
+        if steps:
+            return json.dumps({"steps": steps})
+
+        # 3) legacy deterministic fallback (backs the original unit tests and
+        #    unknown free-form prompts until a real provider key is set)
         lowered = user.lower()
-        destructive = ("rm -rf", "format", "diskpart", "reg delete", "shutdown", "invoke-expression",
-                       "powershell -enc", "del ", "mkdir", "rmdir", " echo ", "clean", "wipe",
-                       "delete", "remove", "uninstall", "kill", "taskkill")
+        destructive = ("rm -rf", "format", "diskpart", "reg delete", "shutdown",
+                       "invoke-expression", "powershell -enc", "del ", "mkdir", "rmdir",
+                       " echo ", "clean", "wipe", "delete", "remove", "uninstall",
+                       "kill", "taskkill")
         confirm = ("install", "npm", "git push", "git commit", "pip install", "choco", "winget")
         if any(k in lowered for k in destructive):
             risk, confirm_flag = "high", True
@@ -100,7 +134,10 @@ class MockProvider(Provider):
         return "echo demo"
 
     async def stream_text(self, system: str, user: str, history: list[dict[str, str]] | None = None) -> AsyncIterator[str]:
-        reply = f"[jarvis mock]: here is my plan for '{user[:200]}'. The Rust engine will verify every command."
+        prompt = self._strip_prompt(user)
+        reply = local_assistant.chat_reply(prompt)
+        if not reply:
+            reply = f"[jarvis mock]: here is my plan for '{user[:200]}'. The Rust engine will verify every command."
         for chunk in (reply[i : i + 24] for i in range(0, len(reply), 24)):
             yield chunk
 

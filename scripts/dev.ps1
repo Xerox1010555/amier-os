@@ -35,7 +35,11 @@ if (-not $providerSet) {
   elseif (Test-Key "ANTHROPIC_API_KEY") { $env:JARVIS_LLM_PROVIDER = "anthropic" }
   else { $env:JARVIS_LLM_PROVIDER = "mock" }
 }
-if (-not $env:JARVIS_SHARED_SECRET) { $env:JARVIS_SHARED_SECRET = "dev-local-secret" }
+# Secret gate only when a real provider is in play (it protects API credits);
+# offline mock auth-off in the app works instantly — zero local secrets.
+if ($env:JARVIS_LLM_PROVIDER -ne "mock" -and -not $env:JARVIS_SHARED_SECRET) {
+  $env:JARVIS_SHARED_SECRET = "dev-local-secret"
+}
 
 $serviceHealthy = $false
 try {
