@@ -1,18 +1,55 @@
 import React, { useEffect, useState } from "react";
 import { api } from "../api";
-import type { Translate } from "../i18n";
+import { applyTheme, getTheme, THEMES, type ThemeDef } from "../themes";
+import type { Lang, Translate } from "../i18n";
 
-export function SettingsView(props: { t: Translate }): React.ReactElement {
-  const { t } = props;
+function ThemeCard(props: { theme: ThemeDef; active: boolean; lang: Lang; pick: () => void }): React.ReactElement {
+  const { theme, active, lang, pick } = props;
+  return (
+    <button
+      className={`theme-chip ${active ? "active" : ""}`}
+      onClick={pick}
+      title={theme.id}
+      aria-pressed={active}
+    >
+      <span className="theme-dots" aria-hidden="true">
+        {theme.swatch.map((c, i) => (
+          <i key={i} style={{ background: c }} />
+        ))}
+      </span>
+      <span className="theme-name">{theme.label[lang]}</span>
+      {active && <span className="badge low">✓</span>}
+    </button>
+  );
+}
+
+export function SettingsView(props: { t: Translate; lang: Lang }): React.ReactElement {
+  const { t, lang } = props;
   const [settings, setSettings] = useState<Record<string, unknown> | null>(null);
   const [health, setHealth] = useState<Record<string, unknown> | null>(null);
   const [secret, setSecret] = useState("");
   const [savedMsg, setSavedMsg] = useState("");
+  const [theme, setThemeState] = useState(getTheme());
+  const [startup, setStartup] = useState<{ enabled: boolean; supported: boolean }>({
+    enabled: false,
+    supported: true,
+  });
 
   useEffect(() => {
     void api.settingsGet().then(setSettings);
     void api.aiHealth().then(setHealth);
+    void api.sys.startupGet().then(setStartup).catch(() => undefined);
   }, []);
+
+  const pickTheme = (id: string) => {
+    setThemeState(id);
+    applyTheme(id);
+  };
+
+  const toggleStartup = async () => {
+    const next = await api.sys.startupSet(!startup.enabled);
+    setStartup(next);
+  };
 
   const saveSecret = async () => {
     if (!secret.trim()) return;
@@ -82,6 +119,40 @@ export function SettingsView(props: { t: Translate }): React.ReactElement {
           <button className="btn primary" onClick={() => void saveSecret()}>save</button>
         </div>
         {savedMsg && <div className="banner ok" style={{ marginTop: 10 }}>{savedMsg}</div>}
+      </div>
+
+      <div className="card">
+        <strong>{t("appearance_title")}</strong>
+        <div className="muted" style={{ margin: "6px 0 10px" }}>
+          {t("theme_hint")}
+        </div>
+        <div className="theme-grid" role="listbox" aria-label={t("theme_label")}>
+          {THEMES.map((def) => (
+            <ThemeCard
+              key={def.id}
+              theme={def}
+              lang={lang}
+              active={theme === def.id}
+              pick={() => pickTheme(def.id)}
+            />
+          ))}
+        </div>
+      </div>
+
+      <div className="card">
+        <strong>{t("startup_title")}</strong>
+        <div className="row" style={{ margin: "8px 0 6px", justifyContent: "space-between" }}>
+          <span className="muted">{startup.supported ? t("startup_hint") : t("startup_dev_note")}</span>
+          <button
+            className={`switch ${startup.enabled ? "on" : ""}`}
+            onClick={() => void toggleStartup()}
+            disabled={!startup.supported}
+            role="switch"
+            aria-checked={startup.enabled}
+          >
+            <i>{startup.enabled ? t("on_label") : t("off_label")}</i>
+          </button>
+        </div>
       </div>
 
       <div className="card">

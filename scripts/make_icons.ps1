@@ -93,4 +93,24 @@ $l = New-Icon 1024
 New-Item -ItemType Directory -Force (Join-Path $root "apps\mobile\assets") | Out-Null
 $l.Save((Join-Path $root "apps\mobile\assets\logo.png"), [System.Drawing.Imaging.ImageFormat]::Png)
 $l.Dispose()
-"icons OK"
+
+# ── icon.ico (16/32/48/256, PNG-compressed frames) for shortcuts/installers ─
+$frames = @(16, 32, 48, 256)
+$pngs = foreach ($n in $frames) { $b = New-Icon ([int]$n); $ms = New-Object System.IO.MemoryStream; $b.Save($ms, [System.Drawing.Imaging.ImageFormat]::Png); $b.Dispose(); $ms.ToArray() }
+$icoPath = Join-Path $root "apps\desktop\assets\icon.ico"
+$fs = [System.IO.File]::Create($icoPath)
+try {
+  $bw = New-Object System.IO.BinaryWriter($fs)
+  $bw.Write([UInt16]0); $bw.Write([UInt16]1); $bw.Write([UInt16]$frames.Count)
+  $offset = 6 + 16 * $frames.Count
+  for ($i = 0; $i -lt $frames.Count; $i++) {
+    $n = $frames[$i]; $d8 = if ($n -eq 256) { 0 } else { $n }
+    $bw.Write([Byte]$d8); $bw.Write([Byte]$d8); $bw.Write([Byte]0); $bw.Write([Byte]0)
+    $bw.Write([UInt16]1); $bw.Write([UInt16]32)
+    $bw.Write([UInt32]$pngs[$i].Length); $bw.Write([UInt32]$offset)
+    $offset += $pngs[$i].Length
+  }
+  foreach ($p in $pngs) { $bw.Write($p) }
+  $bw.Flush()
+} finally { $fs.Dispose() }
+"icons OK (png256 + logo1024 + ico4)"

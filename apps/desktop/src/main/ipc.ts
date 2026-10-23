@@ -173,6 +173,20 @@ export function registerIpc(ctx: IpcContext): void {
     return true;
   });
 
+  // ── OS integration: login autostart (personal-assistant mode) ────────────
+  // Only packaged builds can register a login item — a dev registration would
+  // point at electron.exe without the app bundle.
+  handle("sys.startup.get", () => {
+    const s = app.getLoginItemSettings();
+    return { enabled: s.openAtLogin, supported: app.isPackaged };
+  });
+  handle("sys.startup.set", (_event, enabled: boolean) => {
+    if (!app.isPackaged) return { enabled: false, supported: false };
+    app.setLoginItemSettings({ openAtLogin: Boolean(enabled), args: ["--hidden"] });
+    const s = app.getLoginItemSettings();
+    return { enabled: s.openAtLogin, supported: true };
+  });
+
   handle("ai.chat", async (_event, prompt: string) => {
     // Streaming native SSE marshalling is roadmap; here we accumulate the
     // full answer (still fast, still typed, no renderer net access).

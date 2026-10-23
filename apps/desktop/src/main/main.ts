@@ -74,7 +74,11 @@ function createWindow(): void {
       spellcheck: false,
     },
   });
-  mainWindow.once("ready-to-show", () => mainWindow?.show());
+  mainWindow.once("ready-to-show", () => {
+    // --hidden (login autostart): boot into the tray instead of a window.
+    if (process.argv.includes("--hidden")) return;
+    mainWindow?.show();
+  });
 
   Menu.setApplicationMenu(null);
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {

@@ -156,6 +156,8 @@ export const IPC_METHODS = [
   "window.minimize",
   "window.maximize",
   "window.close",
+  "sys.startup.get",
+  "sys.startup.set",
 ] as const;
 
 export type IpcMethod = (typeof IPC_METHODS)[number];

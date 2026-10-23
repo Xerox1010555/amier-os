@@ -350,6 +350,6 @@ pub fn poll_events(cursor: Option<f64>) -> Result<Vec<EventEnvelope>, napi::Erro
 #[napi]
 pub fn event_head() -> Result<f64, napi::Error> {
     Ok(core()
-        .map(|s| s.events.cursor())
+        .map(|s| s.events.cursor() as f64)
         .unwrap_or(0.0))
 }

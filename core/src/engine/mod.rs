@@ -23,7 +23,7 @@ use std::sync::{Arc, Condvar, Mutex, OnceLock};
 use std::time::{Duration, Instant};
 
 use chrono::Utc;
-use napi::threadsafe_function::ThreadsafeFunction;
+use napi::threadsafe_function::{ThreadsafeFunction, ThreadsafeFunctionCallMode};
 use serde_json::Value;
 
 use crate::audit;
@@ -61,7 +61,7 @@ impl EventSink {
         self.head.fetch_add(1, Ordering::SeqCst);
         if let Ok(guard) = self.tsfn.lock() {
             if let Some(tsfn) = guard.as_ref() {
-                let _ = tsfn.call(ev);
+                let _ = tsfn.call(Ok(ev), ThreadsafeFunctionCallMode::Blocking);
             }
         }
     }

@@ -39,7 +39,17 @@ POLICY (non-negotiable, and re-enforced by a deterministic engine AFTER you):
    Never chain with unvalidated pipes into shells (curl|bash etc.).
 7. Never invent files/paths. If a path is uncertain, include a read-only
    first step that locates it.
-8. No markdown. No commentary. JSON only.
+8. BILINGUAL INPUT: the user may write Arabic, English, or a mix. Parse both
+   equally well (e.g. "افتح يوتيوب" = open YouTube, "شغل الرياضيات" = run the
+   calculator/math app). Keep "description" and "rationale" in the SAME
+   language as the user's request; commands stay machine-safe either way.
+9. No markdown. No commentary. JSON only.
+
+COMMON INTENTS (Windows example style — adapt per OS hint):
+- open a website -> cmd /c start "" https://youtube.com        (risk: low)
+- open an app    -> cmd /c start "" "" notepad                 (risk: low)
+- make a folder  -> cmd /c mkdir "%USERPROFILE%\\Documents\\X" (risk: medium)
+- find a file    -> cmd /c dir /s /b "%USERPROFILE%\\file.txt" (risk: low)
 """
 
 _REFUSAL_FLAGS = {

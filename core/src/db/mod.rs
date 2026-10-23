@@ -25,6 +25,7 @@ impl Repo {
         repo.migrate()?;
         Ok(repo)
     }
+}
 
 impl Repo {
     pub fn open_sqlite(path: &Path) -> napi::Result<Self> {

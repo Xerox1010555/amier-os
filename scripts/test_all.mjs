@@ -52,9 +52,16 @@ if (!args.has("--skip-web")) {
 
 // ── Rust core (skips silently when cargo is absent) ─────────────────────────
 if (!args.has("--skip-rust")) {
+  const userCargo = join(process.env.USERPROFILE ?? "", ".cargo", "bin", "cargo.exe");
   const probe = spawnSync("cargo", ["--version"], { shell: true, encoding: "utf8" });
-  if (probe.status === 0) {
-    results.push(run("cargo", "cargo", ["test", "--manifest-path", "core/Cargo.toml"], { label: "rust: core tests", cwd: "." }));
+  const cargoPath =
+    probe.status === 0
+      ? "cargo"
+      : existsSync(userCargo)
+        ? userCargo
+        : null;
+  if (cargoPath) {
+    results.push(run("cargo", cargoPath, ["test", "--manifest-path", "core/Cargo.toml"], { label: "rust: core tests", cwd: "." }));
   } else {
     console.log("○ rust: cargo not installed — skipping core tests (install rustup to run them)");
   }

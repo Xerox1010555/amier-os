@@ -59,11 +59,17 @@ Command bar (**Ctrl+K**) → type a request → review the plan → **Approve** 
 Unpacked build + blockmap land in `apps/desktop/release/` too. The installers
 are unsigned locally (`signAndEditExecutable` is disabled — `rcedit` fails on
 non-ASCII build paths); the `release.yml` CI job produces 3-OS builds on `v*` tags.
+When a Rust engine was built (`npm run core:build`), `predist` bundles it — the
+installer then boots with the real rules engine instead of the offline stub.
 
 **Android** — `apps/mobile` is the companion APK (`com.amier.os`): plans +
 streamed chat + server/secret pairing, zero OS execution. Build via the
 `mobile.yml` workflow (artifact `Amier-OS-debug-apk`) or locally with JDK 17 +
 Android SDK — full pairing guide in [`docs/MOBILE.md`](docs/MOBILE.md).
+
+**Personal-assistant mode** — one-click Desktop shortcut, .env-driven provider
+auto-detect, login autostart, and Arabic/English "open YouTube" execution:
+[`docs/ASSIST.md`](docs/ASSIST.md).
 
 ## Everyday commands
 

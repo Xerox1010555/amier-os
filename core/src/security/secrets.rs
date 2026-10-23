@@ -87,7 +87,7 @@ pub fn redact(text: &str) -> String {
         .replace_all(&out, |caps: &regex::Captures| {
             let tok = &caps[0];
             if entropy_looks_secret(tok) {
-                format!("{MASK_PREFIX}entropy]").into_owned()
+                format!("{MASK_PREFIX}entropy]")
             } else {
                 tok.to_string()
             }

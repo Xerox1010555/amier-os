@@ -73,6 +73,20 @@ export const api = {
   aiHealth: () => window.aiOS?.aiHealth() as Promise<Record<string, unknown>>,
   aiChat: (prompt: string) =>
     window.aiOS?.aiChat(prompt) as Promise<{ text?: string; error?: string }>,
+  /** OS integration (optional-chained like everything else). */
+  sys: {
+    startupGet: () =>
+      (window.aiOS?.sys?.startupGet?.() ?? Promise.resolve({ enabled: false, supported: false })) as Promise<{
+        enabled: boolean;
+        supported: boolean;
+      }>,
+    startupSet: (enabled: boolean) =>
+      (window.aiOS?.sys?.startupSet?.(enabled) ??
+        Promise.resolve({ enabled: false, supported: false })) as Promise<{
+        enabled: boolean;
+        supported: boolean;
+      }>,
+  },
   onEngine: (cb: (event: unknown) => void) => {
     return (
       window.aiOS?.onEngine(cb) ??

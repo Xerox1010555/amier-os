@@ -43,6 +43,12 @@ const api = {
     max: () => invoke("window.maximize"),
     close: () => invoke("window.close"),
   },
+  /** OS integration: login autostart (personal-assistant mode). */
+  sys: {
+    startupGet: () => invoke("sys.startup.get") as Promise<{ enabled: boolean; supported: boolean }>,
+    startupSet: (enabled: boolean) =>
+      invoke("sys.startup.set", enabled) as Promise<{ enabled: boolean; supported: boolean }>,
+  },
   aiCritique: (prompt: string, plan: unknown) => {
     void plan; // critique flows through the ask() response flags
     return Promise.resolve({ ok: true });

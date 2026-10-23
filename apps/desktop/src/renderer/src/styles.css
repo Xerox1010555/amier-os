@@ -38,9 +38,54 @@
   --radius-lg: 20px;
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
 
+  /* aurora orbs (theme-aware) */
+  --orb-1: #2a5cff;
+  --orb-2: #7d3cff;
+  --orb-3: #0fcf8f;
+
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   color-scheme: dark;
+}
+
+/* ── THEME: emerald — deep jungle glass ─────────────────────────────────── */
+html[data-theme="emerald"] {
+  --bg-0: #03100a; --bg-1: #071a12; --bg-2: #0b2419;
+  --glass: rgba(120, 220, 180, 0.065); --glass-2: rgba(120, 220, 180, 0.1);
+  --stroke: rgba(130, 224, 180, 0.18); --stroke-soft: rgba(130, 224, 180, 0.1);
+  --text: #eafff3; --text-dim: #8fbfa6; --text-faint: #57866f;
+  --accent: #45e3a0; --accent-2: #63d2ff; --accent-3: #b18cff;
+  --orb-1: #0fcf8f; --orb-2: #1a8f6f; --orb-3: #2a5cff;
+}
+
+/* ── THEME: violet — orchid night glass ────────────────────────────────── */
+html[data-theme="violet"] {
+  --bg-0: #0b0513; --bg-1: #140a22; --bg-2: #1d1030;
+  --glass: rgba(190, 150, 255, 0.07); --glass-2: rgba(190, 150, 255, 0.11);
+  --stroke: rgba(190, 160, 255, 0.2); --stroke-soft: rgba(190, 160, 255, 0.11);
+  --text: #f4efff; --text-dim: #ab9fc4; --text-faint: #6f6189;
+  --accent: #b18cff; --accent-2: #7ee3b0; --accent-3: #ff9ad5;
+  --orb-1: #7d3cff; --orb-2: #ff4fd8; --orb-3: #4f8cff;
+}
+
+/* ── THEME: crimson — ember glass ──────────────────────────────────────── */
+html[data-theme="crimson"] {
+  --bg-0: #120408; --bg-1: #1c0810; --bg-2: #260d18;
+  --glass: rgba(255, 150, 160, 0.06); --glass-2: rgba(255, 150, 160, 0.09);
+  --stroke: rgba(255, 160, 170, 0.18); --stroke-soft: rgba(255, 160, 170, 0.1);
+  --text: #fff0f2; --text-dim: #c49aa2; --text-faint: #8a6269;
+  --accent: #ff8695; --accent-2: #ffb054; --accent-3: #b18cff;
+  --orb-1: #ff3c63; --orb-2: #ff7a29; --orb-3: #7d3cff;
+}
+
+/* ── THEME: mono — graphite steel glass ────────────────────────────────── */
+html[data-theme="mono"] {
+  --bg-0: #060709; --bg-1: #0c0e12; --bg-2: #12151b;
+  --glass: rgba(200, 210, 225, 0.05); --glass-2: rgba(200, 210, 225, 0.08);
+  --stroke: rgba(210, 220, 235, 0.16); --stroke-soft: rgba(210, 220, 235, 0.09);
+  --text: #eef2f7; --text-dim: #9aa5b3; --text-faint: #626c79;
+  --accent: #8fb0c9; --accent-2: #c9d8e5; --accent-3: #6ea8ff;
+  --orb-1: #4a6788; --orb-2: #6d7f97; --orb-3: #b0c4d4;
 }
 
 * { box-sizing: border-box; }
@@ -83,19 +128,34 @@ body {
 }
 .orb-1 {
   width: 46vw; height: 46vw; top: -18%; left: -6%;
-  background: radial-gradient(circle at 35% 35%, #2a5cff 0%, transparent 70%);
+  background: radial-gradient(circle at 35% 35%, var(--orb-1) 0%, transparent 70%);
   animation: drift-1 26s ease-in-out infinite alternate;
 }
 .orb-2 {
   width: 38vw; height: 38vw; bottom: -20%; right: -8%;
-  background: radial-gradient(circle at 60% 40%, #7d3cff 0%, transparent 70%);
+  background: radial-gradient(circle at 60% 40%, var(--orb-2) 0%, transparent 70%);
   animation: drift-2 34s ease-in-out infinite alternate;
 }
 .orb-3 {
   width: 30vw; height: 30vw; top: 30%; left: 42%;
-  background: radial-gradient(circle at 50% 50%, #0fcf8f 0%, transparent 72%);
+  background: radial-gradient(circle at 50% 50%, var(--orb-3) 0%, transparent 72%);
   opacity: 0.28;
   animation: drift-3 40s ease-in-out infinite alternate;
+}
+
+/* theme switch: settle colors smoothly (gradients swap instantly, inks fade) */
+body,
+.card,
+.topbar,
+.sidebar,
+.view-title,
+.cmdbar,
+.btn,
+.tab-btn {
+  transition:
+    background-color 0.4s var(--ease),
+    color 0.4s var(--ease),
+    border-color 0.4s var(--ease);
 }
 @keyframes drift-1 { to { transform: translate(9vw, 7vh) scale(1.12); } }
 @keyframes drift-2 { to { transform: translate(-7vw, -9vh) scale(1.18); } }
@@ -477,6 +537,70 @@ p.view-sub { color: var(--text-dim); margin: 0 0 22px; font-size: 13px; }
 @keyframes shimmer { to { background-position: -200% 0; } }
 
 /* ── Scrollbars ──────────────────────────────────────────────────────────── */
+/* ── Theme picker (Settings) ──────────────────────────────────────────────── */
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+}
+.theme-chip {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 12px;
+  border: 1px solid var(--stroke-soft);
+  border-radius: 12px;
+  background: var(--glass);
+  cursor: pointer;
+  color: var(--text);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  transition: border-color 0.18s var(--ease), transform 0.18s var(--ease), background 0.18s;
+}
+.theme-chip:hover { transform: translateY(-1px); border-color: var(--stroke); }
+.theme-chip.active {
+  border-color: var(--accent);
+  box-shadow: 0 6px 18px rgba(68, 120, 255, 0.25), inset 0 0 0 1px rgba(110, 168, 255, 0.25);
+  background: var(--glass-2);
+}
+.theme-dots { display: inline-flex; gap: 4px; flex-shrink: 0; }
+.theme-dots i {
+  width: 13px; height: 13px; border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+}
+.theme-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.switch {
+  position: relative;
+  width: 64px;
+  height: 30px;
+  border-radius: 999px;
+  border: 1px solid var(--stroke-soft);
+  background: rgba(4, 7, 13, 0.6);
+  cursor: pointer;
+  color: var(--text);
+  font: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  transition: background 0.25s var(--ease), border-color 0.25s;
+}
+.switch i {
+  position: absolute;
+  inset-inline-end: 7px;
+  font-style: normal;
+  color: var(--text-dim);
+  transition: inset-inline-end 0.25s var(--ease), color 0.25s;
+}
+.switch.on {
+  background: linear-gradient(135deg, #3b7aee, #6ea8ff 60%, #8f6bff);
+  border-color: transparent;
+  box-shadow: 0 4px 14px rgba(68, 120, 255, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+.switch.on i { inset-inline-start: 9px; color: #04101f; }
+.switch [dir="rtl"] i, [dir="rtl"] .switch.on i { /* logical flip handled by inset-inline */ }
+
 ::-webkit-scrollbar { width: 9px; height: 9px; }
 ::-webkit-scrollbar-thumb {
   background: rgba(148, 180, 255, 0.14);

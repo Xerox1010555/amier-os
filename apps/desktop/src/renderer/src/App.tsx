@@ -120,7 +120,7 @@ export function App(): React.ReactElement {
           {view === "history" && <HistoryView t={t} />}
           {view === "security" && <SecurityView t={t} />}
           {view === "memory" && <MemoryView t={t} />}
-          {view === "settings" && <SettingsView t={t} />}
+          {view === "settings" && <SettingsView t={t} lang={lang} />}
         </main>
       </div>
 

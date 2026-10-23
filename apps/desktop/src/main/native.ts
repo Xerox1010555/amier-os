@@ -52,7 +52,24 @@ function candidatePaths(): string[] {
     path.join(process.resourcesPath ?? appRoot, "core", "ai_os_core.node"),
     path.join(appRoot, "index.node"),
   );
+  if (!app.isPackaged) {
+    // dev from apps/desktop → monorepo-root core build
+    candidates.push(path.join(appRoot, "..", "..", "core", "ai_os_core.node"));
+  }
   return candidates;
+}
+
+/** napi-rs returns camelCase struct fields; normalize to the snake_case contract. */
+function snakeKeys(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(snakeKeys);
+  if (value && typeof value === "object") {
+    const out: Record<string, unknown> = {};
+    for (const [key, val] of Object.entries(value as Record<string, unknown>)) {
+      out[key.replace(/[A-Z]/g, (c) => `_${c.toLowerCase()}`)] = snakeKeys(val);
+    }
+    return out;
+  }
+  return value;
 }
 
 function createStub(): NativeEngine {
@@ -102,6 +119,36 @@ export function loadNative(): NativeEngine {
           continue;
         }
         const engine = mod as NativeEngine;
+        // napi-rs v2 marshals #[napi(object)] fields as camelCase; the renderer
+        // contract is snake_case — normalize once at this boundary.
+        const raw = engine as unknown as Record<string, unknown>;
+        const need = (fn: unknown, name: string): ((...args: unknown[]) => unknown) => {
+          if (typeof fn !== "function") throw new TypeError(`engine API missing: ${name}`);
+          return fn as (...args: unknown[]) => unknown;
+        };
+        const classifyRaw = need(raw.classifyRisk, "classifyRisk");
+        engine.classifyRisk = (command: string, llmRisk?: string) =>
+          snakeKeys(classifyRaw(command, llmRisk)) as RustVerdict;
+        const statusRaw = need(raw.getStatus, "getStatus");
+        engine.getStatus = () =>
+          snakeKeys(statusRaw()) as ReturnType<NativeEngine["getStatus"]>;
+        const pollRaw = need(raw.pollEvents, "pollEvents");
+        engine.pollEvents = (cursor?: number) =>
+          snakeKeys(pollRaw(cursor)) as unknown[];
+        const listTasksRaw = need(raw.listTasks, "listTasks");
+        engine.listTasks = () => snakeKeys(listTasksRaw()) as unknown[];
+        const getTaskRaw = need(raw.getTask, "getTask");
+        engine.getTask = (taskId: string) => snakeKeys(getTaskRaw(taskId)) as unknown;
+        const trailRaw = need(raw.getAuditTrail, "getAuditTrail");
+        engine.getAuditTrail = (cursor?: number, limit?: number) =>
+          snakeKeys(trailRaw(cursor, limit)) as unknown[];
+        const verifyRaw = need(raw.verifyAuditChain, "verifyAuditChain");
+        engine.verifyAuditChain = () => snakeKeys(verifyRaw()) as unknown;
+        const permsRaw = need(raw.listPermissions, "listPermissions");
+        engine.listPermissions = () => snakeKeys(permsRaw()) as unknown[];
+        const listenRaw = need(raw.registerEventListener, "registerEventListener");
+        engine.registerEventListener = (cb: (ev: unknown) => void) =>
+          listenRaw((ev: unknown) => cb(snakeKeys(ev))) as string;
         engine.engineReady = true;
         return engine;
       }
