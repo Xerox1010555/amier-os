@@ -1,0 +1,65 @@
+name: mobile
+
+# Amier OS Android companion — builds the debug APK.
+# Artifact "Amier-OS-debug-apk" on every run; attached to GitHub Releases on tags.
+
+on:
+  push:
+    tags: ["v*"]
+    branches: [main]
+    paths:
+      - "apps/mobile/**"
+      - ".github/workflows/mobile.yml"
+  workflow_dispatch:
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Install workspaces
+        run: npm install --workspaces --include-workspace-root
+
+      - name: Build shared contract
+        run: npm run build --workspace packages/shared
+
+      - name: Typecheck mobile
+        run: npm run typecheck --workspace apps/mobile
+
+      - name: Build mobile web bundle
+        run: npm run build --workspace apps/mobile
+
+      - name: Sync Capacitor (web → android)
+        working-directory: apps/mobile
+        run: npx cap sync android
+
+      - name: Build debug APK
+        working-directory: apps/mobile/android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Amier-OS-debug-apk
+          path: apps/mobile/android/app/build/outputs/apk/debug/*.apk
+
+      - name: Attach APK to release (tags only)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: apps/mobile/android/app/build/outputs/apk/debug/*.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

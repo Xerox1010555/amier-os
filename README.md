@@ -1,16 +1,16 @@
-# Jarvis OS — AI Operating System Assistant
+# Amier OS — AI Operating System Assistant
 
 **Privacy-first AI assistant for your machine. The LLM proposes. The rules engine decides. The human confirms. The audit log remembers.**
 
 `v1.0.0` · Windows-first (macOS/Linux supported) · Electron 31 + React 18 + Rust (napi-rs) + FastAPI
 
-Jarvis turns natural language into **validated plans** for everyday device tasks —
+Amier OS turns natural language into **validated plans** for everyday device tasks —
 then executes every step through a deterministic security pipeline: regex risk rules,
 stricter-of merge with the model's advisory risk, a human confirmation gate,
 hash-chained audit log. Secrets never leave the OS keychain; command output never
 reaches an LLM.
 
-![Jarvis OS dashboard — Aurora Glass UI](docs/preview-dashboard.png)
+![Amier OS dashboard — Aurora Glass UI](docs/preview-dashboard.png)
 
 ---
 
@@ -26,9 +26,9 @@ services/
 infrastructure/
   docker/            Dockerfile + docker-compose.dev.yml (orchestrator + prom + grafana)
   k8s/               deployment / service / hpa (cloud service only — device control stays local)
-scripts/             bootstrap · dev · test_all · seed_db · gen_assets
-docs/                PRD · ARCHITECTURE · SECURITY · API · ROADMAP · MASTER_PROMPT
-.github/workflows/   ci.yml (python+ts+rust) · release.yml (3-OS desktop builds)
+scripts/             bootstrap · dev · test_all · seed_db · gen_assets · make_icons
+docs/                PRD · ARCHITECTURE · SECURITY · API · ROADMAP · MOBILE · MASTER_PROMPT
+.github/workflows/   ci.yml (python+ts+rust) · release.yml (3-OS desktop builds) · mobile.yml (APK)
 ```
 
 ## Quick start (Windows)
@@ -46,6 +46,24 @@ Command bar (**Ctrl+K**) → type a request → review the plan → **Approve** 
 - No API key? Works offline: provider falls back to `mock` (deterministic plans) or `ollama`.
 - Rust not installed (`cargo` absent)? The app still boots; the engine shows *offline*
   and the UI banner explains it. Install from https://rustup.rs then `npm run core:build`.
+
+## Ready-made binaries
+
+**Windows (x64)** — `npm run dist --workspace apps/desktop` produces:
+
+| Artifact                                 | Path                                              |
+| ---------------------------------------- | ------------------------------------------------- |
+| Installer (NSIS, per-user, choose dir)   | `apps/desktop/release/Amier OS Setup 1.0.0.exe`   |
+| Portable single-file                     | `apps/desktop/release/Amier OS 1.0.0.exe`         |
+
+Unpacked build + blockmap land in `apps/desktop/release/` too. The installers
+are unsigned locally (`signAndEditExecutable` is disabled — `rcedit` fails on
+non-ASCII build paths); the `release.yml` CI job produces 3-OS builds on `v*` tags.
+
+**Android** — `apps/mobile` is the companion APK (`com.amier.os`): plans +
+streamed chat + server/secret pairing, zero OS execution. Build via the
+`mobile.yml` workflow (artifact `Amier-OS-debug-apk`) or locally with JDK 17 +
+Android SDK — full pairing guide in [`docs/MOBILE.md`](docs/MOBILE.md).
 
 ## Everyday commands
 

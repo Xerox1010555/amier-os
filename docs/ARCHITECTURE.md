@@ -1,4 +1,4 @@
-# Jarvis OS — Architecture
+# Amier OS — Architecture
 
 ## 1. System map
 

@@ -1,4 +1,4 @@
-# Jarvis OS — Roadmap
+# Amier OS — Roadmap
 
 ## v1.0.0 (shipped in this repo)
 - [x] Rust kernel: rules (deny/high/medium/low + fail-closed default), sandboxed

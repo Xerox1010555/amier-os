@@ -1,4 +1,4 @@
-# Jarvis OS — Product Requirements Document (PRD)
+# Amier OS — Product Requirements Document (PRD)
 
 **Version:** 1.0.0 · **Status:** implemented (v1 scope) · **Owner:** YAR
 

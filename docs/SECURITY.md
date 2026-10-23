@@ -1,4 +1,4 @@
-# Jarvis OS — Security Model
+# Amier OS — Security Model
 
 ## 1. Threat model (summary)
 

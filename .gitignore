@@ -8,6 +8,8 @@ __pycache__/
 # Build outputs
 dist/
 dist-electron/
+release/
+resources/
 target/
 *.tsbuildinfo
 .vite/

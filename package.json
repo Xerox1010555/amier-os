@@ -5,8 +5,8 @@
   "description": "Jarvis OS — AI Operating System Assistant (Electron + Rust core + FastAPI orchestrator)",
   "license": "MIT",
   "workspaces": [
-    "apps/desktop",
-    "packages/shared"
+    "apps/*",
+    "packages/*"
   ],
   "scripts": {
     "bootstrap": "npm install --workspaces --include-workspace-root",
@@ -15,7 +15,7 @@
     "dev": "npm run dev --workspace apps/desktop",
     "start": "npm run start --workspace apps/desktop",
     "build": "npm run build --workspace packages/shared && npm run build --workspace apps/desktop",
-    "typecheck": "npm run typecheck --workspace packages/shared && npm run typecheck --workspace apps/desktop",
+    "typecheck": "npm run typecheck --workspace packages/shared && npm run typecheck --workspace apps/desktop && npm run typecheck --workspace apps/mobile",
     "test:python": "python -m pytest services/ai-orchestrator/tests -q",
     "test:web": "npm run typecheck",
     "test:all": "node scripts/test_all.mjs",

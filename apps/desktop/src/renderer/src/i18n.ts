@@ -1,14 +1,14 @@
 /** Minimal i18n dictionary (EN + AR with RTL support). */
 export const STRINGS = {
   en: {
-    app_title: "Jarvis OS",
+    app_title: "Amier OS",
     nav_dashboard: "Dashboard",
     nav_command: "Command",
     nav_history: "History",
     nav_security: "Security",
     nav_memory: "Memory",
     nav_settings: "Settings",
-    commandbar_placeholder: "Ask Jarvis anything…  (Ctrl+K)",
+    commandbar_placeholder: "Ask Amier anything…  (Ctrl+K)",
     run: "Run",
     deny: "Deny",
     approve: "Approve",
@@ -29,7 +29,7 @@ export const STRINGS = {
     tasks: "tasks",
   },
   ar: {
-    app_title: "جارفيس OS",
+    app_title: "أمير OS",
     nav_dashboard: "لوحة اليوم",
     nav_command: "الأوامر",
     nav_history: "السجل",

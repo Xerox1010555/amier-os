@@ -6,7 +6,7 @@ let toggleFn: (() => void) | null = null;
 
 const STATUS_TEMPLATE = [
   {
-    label: "Show / Hide Jarvis",
+    label: "Show / Hide Amier",
     click: () => doToggle(),
   },
   { type: "separator" as const },
@@ -38,7 +38,7 @@ export function createTray(onToggle: () => void): void {
       );
     }
     trayItem = new Tray(image);
-    trayItem.setToolTip("Jarvis OS — starting");
+    trayItem.setToolTip("Amier OS — starting");
     trayItem.setContextMenu(Menu.buildFromTemplate(STATUS_TEMPLATE));
     void updateStatusLine();
   } catch (err) {
@@ -62,7 +62,7 @@ async function updateStatusLine(): Promise<void> {
     line = "AI Status: service offline";
   }
   if (trayItem) {
-    trayItem.setToolTip(`Jarvis OS — ${line.replace("AI Status: ", "")}`);
+    trayItem.setToolTip(`Amier OS — ${line.replace("AI Status: ", "")}`);
   }
   const menu = Menu.buildFromTemplate(
     STATUS_TEMPLATE.map((item) =>

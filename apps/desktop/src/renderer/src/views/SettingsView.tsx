@@ -87,7 +87,7 @@ export function SettingsView(props: { t: Translate }): React.ReactElement {
       <div className="card">
         <strong>About</strong>
         <div className="muted" style={{ marginTop: 6 }}>
-          Jarvis OS v1.0.0 — Electron 31 + React 18 + Rust (napi) core + FastAPI orchestrator.
+          Amier OS v1.0.0 — Electron 31 + React 18 + Rust (napi) core + FastAPI orchestrator.
           <br />
           The renderer never receives raw execution authority: every command crosses the
           deterministic Rust rules engine and the hash-chained audit log.

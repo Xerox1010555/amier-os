@@ -1,18 +1,23 @@
-appId: local.jarvis.os
-productName: Jarvis OS
+appId: local.amier.os
+productName: Amier OS
 directories:
   output: release
 files:
   - dist/**
   - dist-electron/**
 extraResources:
-  - from: ../../core/ai_os_core.node
-    to: core/ai_os_core.node
+  - from: resources
+    to: .
     filter:
-      - '**/*'
+      - "**/*"
 win:
   target: nsis
   icon: assets/icon.png
+  # Unsignable locally: rcedit/winCodeSign fails on non-ASCII build paths.
+  # NSIS still embeds the icon; CI (ASCII path) may sign & brand the exe.
+  signAndEditExecutable: false
+  forceCodeSigning: false
+electronVersion: 31.7.7
 mac:
   target: dmg
   category: public.app-category.productivity
@@ -23,4 +28,4 @@ nsis:
   allowToChangeInstallationDirectory: true
 publish:
   provider: generic
-  url: https://updates.jarvis.local/
+  url: https://updates.amier.local/

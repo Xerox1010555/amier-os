@@ -189,7 +189,7 @@ export function selfTestIpcContract(): void {
   const missing = IPC_METHODS.filter((ch) => !registered.has(ch));
   if (missing.length > 0) {
     dialog.showErrorBox(
-      "Jarvis IPC contract broken",
+      "Amier IPC contract broken",
       `Missing handlers for: ${missing.join(", ")}. Refusing to continue — fix ipc.ts.`,
     );
     app.quit();
@@ -209,7 +209,7 @@ export function wireEngineEvents(ctx: IpcContext): void {
         const cmd = String(ev.payload?.command ?? "");
         if (Notification.isSupported()) {
           new Notification({
-            title: "Jarvis — Security alert",
+            title: "Amier — Security alert",
             body: cmd ? `Blocked: ${cmd.slice(0, 140)}` : "A dangerous action was blocked.",
           }).show();
         }

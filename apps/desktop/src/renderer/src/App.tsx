@@ -72,7 +72,7 @@ export function App(): React.ReactElement {
         <div className="topbar-brand">
           <div className="brand-badge">J</div>
           <span>
-            JARVIS OS
+            AMIER OS
             <small>v1.0.0</small>
           </span>
         </div>
